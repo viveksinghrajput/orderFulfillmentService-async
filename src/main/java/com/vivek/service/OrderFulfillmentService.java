@@ -1,6 +1,7 @@
-package com.javatechie.service;
+package com.vivek.service;
 
-import com.javatechie.dto.Order;
+import com.vivek.dto.OrderDto;
+import com.vivek.entity.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -30,40 +31,55 @@ public class OrderFulfillmentService {
       7. dispatch product
       **/
 
-    public Order processOrder(Order order) throws InterruptedException {
-        order.setTrackingId(UUID.randomUUID().toString());
-        if (inventoryService.checkProductAvailability(order.getProductId())) {
+    public Order processOrder(OrderDto orderDto) throws InterruptedException {
+       orderDto.setTrackingId(UUID.randomUUID().toString());
+       Order order = new Order();
+        if (inventoryService.checkProductAvailability(orderDto.getProductId())) {
             //handle exception here
-            paymentService.processPayment(order);
+            OrderDto paymentProcessOrderDto = paymentService.processPayment(orderDto);
+            order.setProductId(paymentProcessOrderDto.getProductId());
+            order.setName(paymentProcessOrderDto.getName());
+            order.setProductType(paymentProcessOrderDto.getProductType());
+            order.setQty(paymentProcessOrderDto.getQty());
+            order.setPrice(paymentProcessOrderDto.getPrice());
+            order.setTrackingId(paymentProcessOrderDto.getTrackingId());
         } else {
             throw new RuntimeException("Technical issue please retry");
         }
         return order;
     }
 
+
     @Async("asyncTaskExecutor")
-    public void notifyUser(Order order) throws InterruptedException {
+    public void notifyUser(OrderDto order) throws InterruptedException {
         Thread.sleep(4000L);
         log.info("Notified to the user " + Thread.currentThread().getName());
     }
+
+
     @Async("asyncTaskExecutor")
-    public void assignVendor(Order order) throws InterruptedException {
+    public void assignVendor(OrderDto order) throws InterruptedException {
         Thread.sleep(5000L);
         log.info("Assign order to vendor " + Thread.currentThread().getName());
     }
+
+
     @Async("asyncTaskExecutor")
-    public void packaging(Order order) throws InterruptedException {
+    public void packaging(OrderDto order) throws InterruptedException {
         Thread.sleep(2000L);
         log.info("Order packaging completed " + Thread.currentThread().getName());
     }
+
+
     @Async("asyncTaskExecutor")
-    public void assignDeliveryPartner(Order order) throws InterruptedException {
+    public void assignDeliveryPartner(OrderDto order) throws InterruptedException {
         Thread.sleep(10000L);
         log.info("Delivery partner assigned " + Thread.currentThread().getName());
     }
 
+
     @Async("asyncTaskExecutor")
-    public void assignTrailerAndDispatch(Order order) throws InterruptedException {
+    public void assignTrailerAndDispatch(OrderDto order) throws InterruptedException {
         Thread.sleep(3000L);
         log.info("Trailer assigned and Order dispatched " + Thread.currentThread().getName());
     }

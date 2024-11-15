@@ -1,7 +1,8 @@
-package com.javatechie.controller;
+package com.vivek.controller;
 
-import com.javatechie.dto.Order;
-import com.javatechie.service.OrderFulfillmentService;
+import com.vivek.dto.OrderDto;
+import com.vivek.entity.Order;
+import com.vivek.service.OrderFulfillmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,14 +19,14 @@ public class OrderFulfillmentController {
     private OrderFulfillmentService service;
 
     @PostMapping
-    public ResponseEntity<Order> processOrder(@RequestBody Order order) throws InterruptedException {
-        service.processOrder(order); // synchronous
+    public ResponseEntity<Order> processOrder(@RequestBody OrderDto orderDto) throws InterruptedException {
+        Order order = service.processOrder(orderDto);// synchronous
         // asynchronous
-        service.notifyUser(order);
-        service.assignVendor(order);
-        service.packaging(order);
-        service.assignDeliveryPartner(order);
-        service.assignTrailerAndDispatch(order);
+        service.notifyUser(orderDto);
+        service.assignVendor(orderDto);
+        service.packaging(orderDto);
+        service.assignDeliveryPartner(orderDto);
+        service.assignTrailerAndDispatch(orderDto);
         return ResponseEntity.ok(order);
     }
 }
